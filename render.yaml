@@ -1,0 +1,13 @@
+# Build Command
+npm install
+
+# Start Command
+npm start
+
+# Environment Variables
+NODE_ENV=production
+PORT=3000
+
+# Build Settings
+Build Command: npm install
+Start Command: npm start

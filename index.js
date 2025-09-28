@@ -23,9 +23,12 @@ const connectDB = async () => {
         const mongoOptionsRaw = process.env.MONGODB_OPTIONS || '{}';
         const options = {
             ...JSON.parse(mongoOptionsRaw),
-            serverSelectionTimeoutMS: 5000, // Tiempo de espera para la selección del servidor
+            serverSelectionTimeoutMS: process.env.NODE_ENV === 'production' ? 30000 : 5000, // 30s en prod, 5s en dev
             socketTimeoutMS: 45000, // Tiempo de espera de los sockets
-            family: 4 // Usar IPv4, omitir para probar con IPv6
+            family: 4, // Usar IPv4
+            maxPoolSize: process.env.NODE_ENV === 'production' ? 10 : 5, // Pool de conexiones
+            retryWrites: true,
+            retryReads: true
         };
         
         console.log('Intentando conectar a MongoDB...');
@@ -100,7 +103,24 @@ const PORT = process.env.PORT || 3002;
 
 // Configurar CORS
 const corsOptions = {
-    origin: ['http://localhost:3002', 'https://tudominio.com'], // Reemplaza con tu dominio real
+    origin: function (origin, callback) {
+        // Permitir solicitudes sin origen (como aplicaciones móviles o curl)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+            'http://localhost:3002',
+            'http://localhost:3000',
+            'https://unify-dashboard.onrender.com', // Tu dominio específico de render.com
+            process.env.FRONTEND_URL // Si tienes un dominio personalizado
+        ].filter(Boolean);
+
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.warn(`Origen no permitido: ${origin}`);
+            callback(new Error('No permitido por CORS'));
+        }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204
@@ -373,7 +393,6 @@ app.get('/dashboard/:serverId', async (req, res) => {
         }
         
         // Obtener o crear la configuración del servidor
-        // Asumiendo que serverConfigController.getOrCreateConfig existe
         const config = await serverConfigController.getOrCreateConfig(serverId, guild.name);
         
         // Pasar variables 'title' y 'dashboard' al layout
@@ -637,24 +656,27 @@ app.use((req, res, next) => {
 
 // Iniciar el servidor
 const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
-    console.log('Rutas disponibles:');
-    console.log(`- GET  /`);
-    console.log(`- GET  /dashboard`);
-    console.log(`- GET  /dashboard/:serverId`);
-    console.log(`- GET  /auth/discord`);
-    console.log(`- GET  /auth/discord/callback`);
-    console.log(`- GET  /logout`);
-    console.log(`- POST /api/check-bot-in-guilds (Nota: Esta ruta no está definida en el código, revisar)`);
-    console.log(`- GET  /api/debug/guilds (Nota: Esta ruta no está definida en el código, revisar)`);
-    console.log(`- GET  /api/debug/bot-token`);
-    console.log(`- GET  /api/debug/simple-bot-check/:guildId`);
-    console.log(`- POST /dashboard/refresh`);
-    console.log(`- GET  /api/servers/:serverId/channels`);
-    console.log(`- POST /api/servers/:serverId/welcome`);
-    console.log(`- Página principal: http://localhost:${PORT}`);
-    console.log(`- Términos: http://localhost:${PORT}/terminos`);
-    console.log(`- Privacidad: http://localhost:${PORT}/privacidad`);
+    const baseUrl = process.env.NODE_ENV === 'production'
+        ? `https://${process.env.FRONTEND_URL || 'unify-dashboard.onrender.com'}`
+        : `http://localhost:${PORT}`;
+
+    console.log(`🚀 Servidor iniciado en ${NODE_ENV === 'production' ? 'producción' : 'desarrollo'}`);
+    console.log(`📍 Servidor escuchando en ${baseUrl}`);
+    console.log('📋 Rutas disponibles:');
+    console.log(`   GET  /`);
+    console.log(`   GET  /dashboard`);
+    console.log(`   GET  /dashboard/:serverId`);
+    console.log(`   GET  /auth/discord`);
+    console.log(`   GET  /auth/discord/callback`);
+    console.log(`   GET  /logout`);
+    console.log(`   POST /dashboard/refresh`);
+    console.log(`   GET  /api/servers/:serverId/channels`);
+    console.log(`   POST /api/servers/:serverId/welcome`);
+    console.log(`   GET  /api/debug/bot-token`);
+    console.log(`   GET  /api/debug/simple-bot-check/:guildId`);
+    console.log(`   GET  /terminos`);
+    console.log(`   GET  /privacidad`);
+    console.log(`🌐 Página principal: ${baseUrl}`);
 });
 
 // Manejo de errores

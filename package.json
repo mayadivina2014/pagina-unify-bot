@@ -1,14 +1,22 @@
 {
   "name": "pagina-unify-bot",
   "version": "1.0.0",
-  "description": "Sitio web para Unify Bot",
+  "description": "Sitio web para Unify Bot - Sistema de DNI Internacional para Discord",
   "main": "index.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
     "init-db": "node scripts/init-mongo.js",
-    "dev:full": "npm run init-db && npm run dev"
+    "dev:full": "npm run init-db && npm run dev",
+    "build": "echo 'No build step required'"
   },
+  "keywords": ["discord", "bot", "dni", "unify", "nodejs", "express"],
+  "author": "Tu Nombre",
+  "license": "MIT",
   "dependencies": {
     "@discordjs/rest": "^2.6.0",
     "connect-flash": "^0.1.1",
