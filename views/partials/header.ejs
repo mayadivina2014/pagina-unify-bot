@@ -1,0 +1,71 @@
+<header class="bg-white shadow-sm sticky-top">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="/">
+                    <img src="/images/Logo_pagina.png" alt="Unify Bot" class="img-fluid me-2" style="max-height: 40px;">
+                    <span class="h4 mb-0 d-none d-md-inline">Unify Bot</span>
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/#inicio">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/#caracteristicas">Características</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/#comandos">Comandos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/#faq">FAQ</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <button id="themeToggle" class="btn btn-outline-secondary btn-sm" aria-label="Cambiar tema">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        
+                        <% if (user) { %>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-decoration-none dropdown-toggle d-flex align-items-center" 
+                                        type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="<%= user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png' %>" 
+                                         alt="<%= user.username %>" 
+                                         class="rounded-circle me-2" 
+                                         width="32" 
+                                         height="32">
+                                    <span class="d-none d-md-inline"><%= user.username %></span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="/dashboard">
+                                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/auth/logout">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        <% } else { %>
+                            <a href="/auth/discord" class="btn btn-primary">
+                                <i class="fab fa-discord me-2"></i> Iniciar sesión
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+</header>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Unify Bot' %></title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Unify Bot - El mejor bot de moderación y utilidad para tu servidor de Discord">
+    <meta name="theme-color" content="#5865F2">
+    <meta name="author" content="Unify Bot Team">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/images/Logo_pagina.png" type="image/png">
+    <link rel="shortcut icon" href="/images/Logo_pagina.png" type="image/png">
+    <link rel="icon" type="image/x-icon" href="/images/Logo_pagina.png">
+    
+    <!-- Preconnect para mejorar el rendimiento -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="/css/dashboard.css?version=<%= new Date().getTime() %>">
+    
+    <!-- Estilos CSS integrados -->
+    <style>
+        /* Estilos de reseteo */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colores principales */
+            --primary-color: #5865F2;
+            --primary-rgb: 88, 101, 242;
+            --secondary-color: #404EED;
+            --success-color: #3BA55C;
+            --danger-color: #ED4245;
+            --warning-color: #FAA61A;
+            --info-color: #5865F2;
+            
+            /* Colores de fondo */
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F2F3F5;
+            --bg-tertiary: #E3E5E8;
+            --bg-card: #FFFFFF;
+            
+            /* Colores de texto */
+            --text-primary: #2E3338;
+            --text-secondary: #4F5660;
+            --text-muted: #747F8D;
+            
+            /* Bordes */
+            --border-color: #E3E5E8;
+            --border-radius: 8px;
+            
+            /* Sombras */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            
+            /* Espaciado */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-xxl: 3rem;
+            
+            /* Tipografía */
+            --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            --font-mono: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
+            
+            /* Transiciones */
+            --transition: all 0.2s ease-in-out;
+        }
+
+        /* Estilos base */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Contenedor */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+        }
+
+        /* Encabezado */
+        .header {
+            background-color: var(--bg-primary);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Estilos para íconos de servidor */
+        .server-icon-default {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .server-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--bg-card);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estado del bot */
+        .bot-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .bot-status i {
+            margin-right: 0.5rem;
+        }
+
+        .bot-status.online {
+            color: var(--success-color);
+        }
+
+        .bot-status.offline {
+            color: var(--danger-color);
+        }
+
+        /* Estilos para el contenido principal */
+        main {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+        
+        /* Estilos para las tarjetas de servidor */
+        .server-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            height: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Estilos para los botones */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+        
+        /* Estilos para los títulos */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        /* Enlaces */
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+        
+        /* Tema oscuro */
+        [data-bs-theme="dark"] {
+            --bg-primary: #36393F;
+            --bg-secondary: #2F3136;
+            --bg-tertiary: #202225;
+            --bg-card: #2F3136;
+            --text-primary: #DCDDDE;
+            --text-secondary: #B9BBBE;
+            --text-muted: #A3A6AA;
+            --border-color: #40444B;
+        }
+        
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        
+        /* Estilos para el tema oscuro */
+        [data-bs-theme="dark"] .bg-light {
+            background-color: var(--dark-color) !important;
+        }
+        
+        [data-bs-theme="dark"] .card {
+            background-color: #2F3136;
+            border-color: var(--border-color);
+        }
+        
+        [data-bs-theme="dark"] .form-control, 
+        [data-bs-theme="dark"] .form-select {
+            background-color: #40444B;
+            border-color: #202225;
+            color: #DCDDDE;
+        }
+        
+        [data-bs-theme="dark"] .form-control:focus, 
+        [data-bs-theme="dark"] .form-select:focus {
+            background-color: #40444B;
+            color: #DCDDDE;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(88, 101, 242, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header', { user }) %>
+
+    <main class="container py-4">
+        <%- body %>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+    <!-- jQuery (necesario para Bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+            crossorigin="anonymous"></script>
+
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Scripts personalizados -->
+    <script src="/js/main.js"></script>
+
+    <% if (typeof dashboard !== 'undefined' && dashboard) { %>
+    <script src="/js/dashboard.js"></script>
+    <% } %>
+
+    <script>
+        // Función para cambiar entre tema claro y oscuro
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            // Guardar la preferencia del usuario en localStorage
+            localStorage.setItem('theme', newTheme);
+
+            // Aplicar el nuevo tema
+            html.setAttribute('data-bs-theme', newTheme);
+
+            // Actualizar el icono del botón
+            const icon = document.querySelector('#themeToggle i');
+            if (newTheme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // Aplicar el tema guardado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+
+            // Configurar el icono del botón de tema
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                const icon = themeToggle.querySelector('i');
+                if (savedTheme === 'dark') {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            // Inicializar tooltips de Bootstrap
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Configuración de Toastr
+            if (window.toastr) {
+                toastr.options = {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-bottom-right',
+                    timeOut: 5000,
+                    extendedTimeOut: 2000,
+                    showEasing: 'swing',
+                    hideEasing: 'linear',
+                    showMethod: 'fadeIn',
+                    hideMethod: 'fadeOut'
+                };
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "pagina-unify-bot",
+  "version": "1.0.0",
+  "description": "Sitio web para Unify Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "init-db": "node scripts/init-mongo.js",
+    "dev:full": "npm run init-db && npm run dev"
+  },
+  "dependencies": {
+    "@discordjs/rest": "^2.6.0",
+    "connect-flash": "^0.1.1",
+    "cors": "^2.8.5",
+    "discord-api-types": "^0.38.26",
+    "dotenv": "^17.2.2",
+    "ejs": "^3.1.10",
+    "ejs-mate": "^4.0.0",
+    "express": "^4.21.2",
+    "express-session": "^1.18.2",
+    "mongoose": "^8.18.2",
+    "node-fetch": "^2.7.0",
+    "passport": "^0.7.0",
+    "passport-discord": "^0.1.4",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

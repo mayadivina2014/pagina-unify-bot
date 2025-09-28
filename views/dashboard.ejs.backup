@@ -1,0 +1,187 @@
+<%/*
+  dashboard.ejs
+  Versión final — incluye búsqueda cliente y botón "Actualizar" funcional.
+  Intenta primero obtener /api/guilds (JSON). Si no existe, llama a /dashboard/refresh y recarga.
+*/%>
+<style>
+:root{--primary:#5865F2;--primary-dark:#4752c4;--bg:#f6f7fb;--card:#fff;--muted:#7a8089}
+.dashboard-wrap{font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial;color:#222;padding:20px}
+.dashboard-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.title-group h1{font-size:20px;margin:0}
+.title-group p{margin:0;font-size:13px;color:var(--muted)}
+.controls{display:flex;gap:10px;align-items:center}
+.search{display:flex;align-items:center;background:var(--card);border-radius:999px;padding:6px 10px;border:1px solid #e9edf3}
+.search input{border:0;outline:0;background:transparent;padding:6px;width:200px}
+.badge{background:linear-gradient(90deg,var(--primary),var(--primary-dark));color:white;padding:6px 10px;border-radius:999px;font-weight:600}
+.btn{background:var(--primary);color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+.btn.secondary{background:transparent;color:var(--primary);border:1px solid rgba(88,101,242,0.12)}
+.servers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:var(--card);border-radius:12px;overflow:hidden;border:1px solid #edf0f5;box-shadow:0 6px 18px rgba(16,24,40,0.04);transition:transform .18s}
+.card:hover{transform:translateY(-6px)}
+.card-body{padding:14px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.server-avatar{width:82px;height:82px;border-radius:18px;object-fit:cover;margin-bottom:10px}
+.server-initial{width:82px;height:82px;border-radius:18px;display:grid;place-items:center;font-size:28px;font-weight:700;color:white;background:linear-gradient(135deg,var(--primary),#99aab5);margin-bottom:10px}
+.card-title{font-weight:700;margin:0 0 6px}
+.card-sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card-actions{width:100%;display:flex;gap:8px}
+.manage{background:linear-gradient(90deg,var(--primary),var(--primary-dark));color:white;padding:10px;border-radius:8px;text-decoration:none}
+.invite{background:transparent;border:1px solid #f0f2f8;color:var(--muted);padding:10px;border-radius:8px;text-decoration:none}
+.status{display:inline-flex;gap:8px;align-items:center;font-weight:600;padding:6px 10px;border-radius:999px;font-size:13px}
+.status .dot{width:9px;height:9px;border-radius:50%}
+.status.online .dot{background:#2fc35a}
+.status.offline .dot{background:#ed4245}
+.empty{grid-column:1/-1;background:linear-gradient(180deg,#fff,#fbfcff);border:1px dashed #e9edf5;padding:34px;border-radius:12px;display:flex;flex-direction:column;align-items:center}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:rgba(255,255,255,0.9);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.2);opacity:0;transform:translateY(12px);transition:all .25s}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:720px){.search input{width:120px}.servers-grid{grid-template-columns:1fr}}
+</style>
+
+<div class="dashboard-wrap">
+  <div class="dashboard-top">
+    <div class="title-group">
+      <h1>Mis servidores</h1>
+      <p>Administra los servidores donde tienes permisos de administrador</p>
+    </div>
+
+    <div class="controls">
+      <div class="search" role="search">
+        <i class="fas fa-search" style="margin-right:8px;color:var(--muted)"></i>
+        <input id="searchInput" placeholder="Buscar servidor..." />
+      </div>
+
+      <span id="totalBadge" class="badge"><%= Array.isArray(guilds) ? guilds.length : '-' %></span>
+
+      <button id="refreshButton" class="btn" title="Actualizar servidores" aria-live="polite">
+        <i class="fas fa-sync-alt" id="refreshIcon" style="margin-right:8px"></i>Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="servers-grid" id="serversGrid" aria-live="polite">
+    <!-- Render inicial del servidor (será reemplazado por el script si es posible) -->
+    <script id="initialGuilds" type="application/json"><%= JSON.stringify(Array.isArray(guilds) ? guilds : []) %></script>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-atomic="true"></div>
+
+<script>
+(function(){
+  const serversGrid = document.getElementById('serversGrid');
+  const refreshButton = document.getElementById('refreshButton');
+  const refreshIcon = document.getElementById('refreshIcon');
+  const totalBadge = document.getElementById('totalBadge');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg, ms=2500){
+    toast.textContent = msg; toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), ms);
+  }
+
+  function getFirstLetter(name){ return name ? name.charAt(0).toUpperCase() : '?'; }
+
+  function buildCard(guild){
+    const card = document.createElement('div'); card.className='card';
+    card.setAttribute('data-name', (guild.name||'').toLowerCase());
+
+    const body = document.createElement('div'); body.className='card-body';
+
+    if(guild.iconUrl){
+      const img = document.createElement('img'); img.className='server-avatar';
+      img.src = guild.iconUrl; img.alt = guild.name || 'Servidor';
+      img.onerror = function(){ this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent(guild.name||'')+'&background=random&size=128&rounded=true&bold=true'; }
+      body.appendChild(img);
+    } else {
+      const div = document.createElement('div'); div.className='server-initial'; div.textContent=getFirstLetter(guild.name);
+      body.appendChild(div);
+    }
+
+    const title = document.createElement('div'); title.className='card-title'; title.textContent = guild.name || 'Servidor sin nombre';
+    const sub = document.createElement('div'); sub.className='card-sub'; sub.innerHTML='ID: <span style="font-family:monospace;font-size:12px;color:var(--muted)">'+(guild.id||'N/A')+'</span>';
+
+    const actions = document.createElement('div'); actions.className='card-actions';
+    if(guild.botInGuild){
+      const a = document.createElement('a'); a.className='manage'; a.href='/dashboard/'+guild.id; a.innerHTML='<i class="fas fa-cog" style="margin-right:8px"></i>Administrar';
+      actions.appendChild(a);
+    } else {
+      const a = document.createElement('a'); a.className='invite'; a.target='_blank';
+      const clientId = encodeURIComponent((typeof process!=='undefined' && process.env && process.env.DISCORD_CLIENT_ID) ? process.env.DISCORD_CLIENT_ID : '<CLIENT_ID>');
+      a.href = 'https://discord.com/oauth2/authorize?client_id='+clientId+'&scope=bot&permissions=8&guild_id='+encodeURIComponent(guild.id||'');
+      a.innerHTML='<i class="fas fa-robot" style="margin-right:8px"></i>Agregar bot';
+      actions.appendChild(a);
+    }
+
+    const statusWrap = document.createElement('div'); statusWrap.style.marginTop='10px'; statusWrap.style.display='flex'; statusWrap.style.justifyContent='center';
+    const status = document.createElement('div'); status.className='status '+(guild.botInGuild?'online':'offline');
+    const dot = document.createElement('span'); dot.className='dot'; status.appendChild(dot);
+    const txt = document.createElement('span'); txt.textContent = guild.botInGuild ? 'Bot en el servidor' : 'Bot no está en el servidor'; status.appendChild(txt);
+    statusWrap.appendChild(status);
+
+    body.appendChild(title); body.appendChild(sub); body.appendChild(actions); body.appendChild(statusWrap);
+    card.appendChild(body);
+    return card;
+  }
+
+  function renderGuilds(list){
+    serversGrid.innerHTML='';
+    if(!Array.isArray(list) || list.length===0){
+      serversGrid.innerHTML = '<div class="empty"><i class="fas fa-server" style="font-size:36px;color:#99aab5"></i><h3>No se encontraron servidores</h3><p style="color:var(--muted);max-width:560px">No tienes permisos de administrador en ningún servidor de Discord.</p></div>';
+      totalBadge.textContent = Array.isArray(list)?list.length:'-';
+      return;
+    }
+    list.forEach(g=> serversGrid.appendChild(buildCard(g)) );
+    totalBadge.textContent = list.length;
+  }
+
+  // Inicializa con los guilds inyectados por servidor si existen
+  try{
+    const initial = document.getElementById('initialGuilds');
+    if(initial){ const parsed = JSON.parse(initial.textContent || '[]'); renderGuilds(parsed); }
+  }catch(e){ console.error('initial parse', e); }
+
+  // Buscador cliente
+  document.getElementById('searchInput').addEventListener('input', function(e){
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('#serversGrid .card').forEach(function(card){
+      const name = card.getAttribute('data-name')||'';
+      card.style.display = name.indexOf(q) > -1 ? '' : 'none';
+    });
+  });
+
+  // Refresh: intenta obtener /api/guilds (JSON) y actualizar sin recargar. Si falla, llama a /dashboard/refresh y recarga.
+  refreshButton.addEventListener('click', function(){
+    refreshButton.disabled = true; const old = refreshIcon.innerHTML; refreshIcon.innerHTML = '<span class="spinner"></span>';
+
+    // intentar /api/guilds
+    fetch('/api/guilds', {method:'GET', headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}})
+      .then(r=>{
+        if(r.ok) return r.json();
+        throw new Error('no-json');
+      })
+      .then(data=>{
+        renderGuilds(data);
+        showToast('Lista de servidores actualizada');
+      })
+      .catch(()=>{
+        // intentar endpoint de refresh y luego recargar
+        fetch('/dashboard/refresh', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+          .then(res=>{
+            if(res.ok){
+              // intentar obtener /api/guilds de nuevo
+              return fetch('/api/guilds', {method:'GET',headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}})
+                .then(r2=> r2.ok ? r2.json() : Promise.reject())
+                .then(d2=>{ renderGuilds(d2); showToast('Lista de servidores actualizada'); })
+                .catch(()=> location.reload());
+            } else {
+              location.reload();
+            }
+          })
+          .catch(()=> location.reload());
+      })
+      .finally(()=>{ refreshButton.disabled=false; refreshIcon.innerHTML = old; });
+  });
+
+})();
+</script>

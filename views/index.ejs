@@ -1,0 +1,261 @@
+<% layout('layouts/main', { title: 'Inicio', dashboard: false }) %>
+
+<section class="hero" id="inicio">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Sistema de DNI Internacional para Discord</h1>
+            <p class="hero-subtitle">Gestiona la identificación de tus ciudadanos de manera fácil y segura</p>
+
+            <div class="hero-buttons">
+                <% if (!user) { %>
+                    <a href="/auth/discord" class="btn btn-primary btn-lg">
+                        <i class="fab fa-discord"></i> Iniciar Sesión con Discord
+                    </a>
+                <% } else { %>
+                    <a href="/dashboard" class="btn btn-primary btn-lg">
+                        <i class="fas fa-tachometer-alt"></i> Ir al Dashboard
+                    </a>
+                <% } %>
+                <a href="#caracteristicas" class="btn btn-outline btn-lg">
+                    <i class="fas fa-info-circle"></i> Más información
+                </a>
+            </div>
+
+            </div>
+        <div class="hero-image">
+            <img src="/images/Logo_pagina.png" alt="Unify Bot Preview">
+        </div>
+    </div>
+</section>
+
+<section id="caracteristicas" class="section features">
+    <div class="container">
+        <h2 class="section-title">Características Principales</h2>
+        <p class="section-subtitle">Descubre todo lo que Unify Bot tiene para ofrecer</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-id-card"></i></div>
+                <h3>DNI Personalizado</h3>
+                <p>Genera identificaciones únicas y visualmente atractivas para cada miembro de tu comunidad.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Seguridad Avanzada</h3>
+                <p>Usa tokens y validación de Discord para asegurar que solo los usuarios verificados accedan a la información.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-cogs"></i></div>
+                <h3>Configuración Flexible</h3>
+                <p>Personaliza los campos, colores y el diseño de los DNI a través de un dashboard web intuitivo.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Estadísticas y Logs</h3>
+                <p>Accede a logs detallados de creación, modificación y uso de los documentos de identidad.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <h2>¿Listo para empezar?</h2>
+        <p>Añade Unify Bot a tu servidor y comienza a gestionar tus ciudadanos hoy mismo.</p>
+        <a href="https://discord.com/oauth2/authorize?client_id=<%= process.env.DISCORD_CLIENT_ID %>&scope=bot%20applications.commands&permissions=8" 
+           class="btn btn-light btn-lg mt-3" target="_blank">
+            <i class="fab fa-discord"></i> Invitar al Bot
+        </a>
+    </div>
+</section>
+
+<style>
+.hero {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+/* hero-stats eliminado del HTML, dejamos estilos por si los usas en otro lado */
+.hero-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.hero-image {
+    flex-shrink: 0;
+    margin-left: 2rem;
+}
+
+.hero-image img {
+    max-width: 400px;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.features {
+    padding: 5rem 0;
+    background-color: var(--bg-secondary);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.section-subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto 3rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    background: rgba(var(--primary-rgb), 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.cta-section {
+    padding: 5rem 0;
+    text-align: center;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    color: white;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta-section p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    opacity: 0.9;
+}
+
+@media (max-width: 992px) {
+    .hero .container {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .hero-buttons {
+        justify-content: center;
+    }
+    
+    .hero-image {
+        margin: 3rem 0 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+    }
+    
+    .hero-image img {
+        max-width: 100%;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+}
+</style>

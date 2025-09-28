@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Unify Bot - Sistema de DNI Internacional para Discord</title>
+  <link rel="icon" href="/images/Logo_pagina.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/index.css">
+  <meta name="description" content="Unify Bot - gestor todo en uno para Discord. Moderación, automatización y personalización.">
+</head>
+<body>
+
+<header class="header">
+  <div class="container header-content">
+    <a href="#inicio" class="logo"><img src="/images/Logo_pagina.png" alt="Unify Bot" height="40"></a>
+
+    <nav id="mainNav" class="main-nav">
+      <ul id="navLinks" class="nav-links">
+        <li><a href="#inicio" class="nav-link">Inicio</a></li>
+        <li><a href="#caracteristicas" class="nav-link">Características</a></li>
+        <li><a href="#comandos" class="nav-link">Comandos</a></li>
+        <li><a href="#faq" class="nav-link">FAQ</a></li>
+        <li><a href="#contacto" class="nav-link">Contacto</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <button id="loginButton" class="btn btn-secondary"><i class="fab fa-discord"></i> Iniciar Sesión</button>
+      <a class="discord-btn" href="https://discord.com/api/oauth2/authorize?client_id=1397383318063812678&permissions=8&scope=bot%20applications.commands"><i class="fab fa-discord"></i> Invitar Bot</a>
+      <button id="menuToggle" class="menu-toggle" aria-label="Menú"><i class="fas fa-bars"></i></button>
+      <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema"><i class="fas fa-moon"></i></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="inicio" class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <h1>Potencia tu servidor de Discord con <span style="background:linear-gradient(90deg,#8a2be2,#9c27b0);-webkit-background-clip:text;color:transparent;">Unify</span></h1>
+        <p class="lead">El bot todo en uno que necesitas para gestionar tu comunidad de manera profesional y eficiente.</p>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="https://discord.com/api/oauth2/authorize?client_id=1397383318063812678&permissions=8&scope=bot%20applications.commands"><i class="fab fa-discord"></i> Invitar Bot</a>
+          <button id="heroLoginButton" class="btn btn-secondary"><i class="fab fa-discord"></i> Iniciar Sesión</button>
+          <a class="btn btn-outline" href="#caracteristicas">Ver características</a>
+        </div>
+
+        <div class="stat-label">Usuarios activos</div></div>
+          <div class="stat-item"><div class="stat-number">+500</div><div class="stat-label">Servidores</div></div>
+          <div class="stat-item"><div class="stat-number">99.9%</div><div class="stat-label">Tiempo activo</div></div>
+        </div>
+      </div>
+
+      <div class="hero-image"><img src="/images/Logo_pagina.png" alt="Unify Bot Preview"></div>
+    </div>
+  </section>
+
+  <section id="caracteristicas" class="section features">
+    <div class="container">
+      <h2 class="section-title">Características Principales</h2>
+      <p class="section-subtitle">Descubre todo lo que Unify puede hacer por tu servidor</p>
+      <div class="features-grid">
+        <div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-alt"></i></div><h3>Moderación Avanzada</h3><p>Mantén tu servidor seguro con herramientas de moderación potentes y fáciles de usar.</p></div>
+        <div class="feature-card"><div class="feature-icon"><i class="fas fa-robot"></i></div><h3>Automatización</h3><p>Automatiza tareas repetitivas y haz que tu servidor funcione como un reloj.</p></div>
+        <div class="feature-card"><div class="feature-icon"><i class="fas fa-users"></i></div><h3>Gestión de Miembros</h3><p>Gestiona a los miembros de tu comunidad de manera eficiente.</p></div>
+        <div class="feature-card"><div class="feature-icon"><i class="fas fa-gamepad"></i></div><h3>Juegos y Entretenimiento</h3><p>Diversión asegurada con juegos y actividades para tu comunidad.</p></div>
+        <div class="feature-card"><div class="feature-icon"><i class="fas fa-cogs"></i></div><h3>Personalización Total</h3><p>Adapta el bot a las necesidades específicas de tu servidor.</p></div>
+        <div class="feature-card"><div class="feature-icon"><i class="fas fa-headset"></i></div><h3>Soporte 24/7</h3><p>Nuestro equipo está siempre disponible para ayudarte con lo que necesites.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="comandos" class="section commands">
+    <div class="container">
+      <h2 class="section-title">Comandos Populares</h2>
+      <div class="commands-grid">
+        <div class="command-card"><h3>/moderar</h3><p>Accede a las herramientas de moderación del servidor.</p><div class="command-usage"><span>Uso:</span> /moderar [opción]</div></div>
+        <div class="command-card"><h3>/configurar</h3><p>Configura las preferencias del bot en tu servidor.</p><div class="command-usage"><span>Uso:</span> /configurar [opción]</div></div>
+        <div class="command-card"><h3>/ayuda</h3><p>Muestra la lista de comandos disponibles.</p><div class="command-usage"><span>Uso:</span> /ayuda [comando]</div></div>
+        <div class="command-card"><h3>/info</h3><p>Muestra información sobre el bot y el servidor.</p><div class="command-usage"><span>Uso:</span> /info</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="container text-center">
+      <h2>¿Listo para llevar tu servidor al siguiente nivel?</h2>
+      <p>Incorpora Unify a tu servidor de Discord hoy mismo y descubre una nueva forma de gestionar tu comunidad.</p>
+      <a class="btn btn-primary btn-large" href="https://discord.com/api/oauth2/authorize?client_id=1397383318063812678&permissions=8&scope=bot%20applications.commands"><i class="fab fa-discord"></i> Invitar a Discord</a>
+    </div>
+  </section>
+
+  <section class="terms" id="terminos">
+    <div class="terms-container container">
+      <div class="terms-header"><h1>Términos de Servicio</h1><p>Última actualización: 18 de Septiembre, 2023</p></div>
+      <div class="terms-content"> <!-- conservar contenido -->
+        <!-- ... -->
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contacto">
+  <div class="footer-content container">
+    <div class="footer-links">
+      <a href="#inicio">Inicio</a>
+      <a href="#caracteristicas">Características</a>
+      <a href="#comandos">Comandos</a>
+      <a href="#faq">FAQ</a>
+      <a href="terminos.html">Términos</a>
+      <a href="privacidad.html">Privacidad</a>
+    </div>
+    <div class="footer-copyright">&copy; 2023 Unify Bot. Todos los derechos reservados.<br>No estamos afiliados a Discord Inc.</div>
+  </div>
+</footer>
+
+<script>
+// Menu móvil
+(function(){
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinks = document.getElementById('navLinks');
+  menuToggle.addEventListener('click', ()=> navLinks.classList.toggle('active'));
+
+  // Theme toggle (light/dark)
+  const themeToggle = document.getElementById('themeToggle');
+  const root = document.documentElement;
+  function setTheme(t){ root.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+  const saved = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+  setTheme(saved);
+  themeToggle.addEventListener('click', ()=> setTheme(root.getAttribute('data-theme')==='dark' ? 'light' : 'dark'));
+
+  // Login button directs to auth route (backend)
+  document.getElementById('loginButton').addEventListener('click', ()=> location.href='/auth/discord');
+  document.getElementById('heroLoginButton').addEventListener('click', ()=> location.href='/auth/discord');
+
+  // Smooth open for anchor links on small screens
+  document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click', ()=>{
+    if(navLinks.classList.contains('active')) navLinks.classList.remove('active');
+  }));
+})();
+</script>
+
+</body>
+</html>

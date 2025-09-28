@@ -1,0 +1,297 @@
+<% layout('layouts/main', { title: `Configuración - ${guild.name}`, dashboard: true }) %>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Configuración</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/dashboard/<%= guild.id %>" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-door-open me-2"></i>Mensaje de Bienvenida
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-door-open me-2"></i> Mensaje de Bienvenida
+                        </h4>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="welcomeEnabled" 
+                                <%= config.welcome.enabled ? 'checked' : '' %>>
+                            <label class="form-check-label fw-bold" for="welcomeEnabled">
+                                <%= config.welcome.enabled ? 'Activado' : 'Desactivado' %>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="welcomeForm">
+                        <input type="hidden" name="enabled" id="enabled" value="<%= config.welcome.enabled %>">
+                        
+                        <div class="mb-3">
+                            <label for="channelId" class="form-label">Canal de bienvenida</label>
+                            <select class="form-select" id="channelId" name="channelId" required>
+                                <option value="">Seleccionar canal...</option>
+                                </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="welcomeMessage" class="form-label">Mensaje de bienvenida</label>
+                            <textarea class="form-control" id="welcomeMessage" name="message" rows="3" 
+                                placeholder="¡Bienvenido {user} a {server}!"><%= config.welcome.message %></textarea>
+                            <div class="form-text">
+                                Variables disponibles: {user} - Menciona al usuario, {server} - Nombre del servidor
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Imagen de bienvenida</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="imageUrl" name="imageUrl" 
+                                    placeholder="URL de la imagen" value="<%= config.welcome.imageUrl || '' %>">
+                                <button class="btn btn-outline-secondary" type="button" id="uploadImageBtn">
+                                    <i class="fas fa-upload"></i> Subir
+                                </button>
+                            </div>
+                            <div id="imagePreview" class="mt-2 text-center">
+                                <% if (config.welcome.imageUrl) { %>
+                                    <img src="<%= config.welcome.imageUrl %>" class="img-fluid rounded" style="max-height: 200px;">
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="embedEnabled"
+                                        name="embed[enabled]" <%= config.welcome.embed.enabled ? 'checked' : '' %>>
+                                    <label class="form-check-label" for="embedEnabled">
+                                        Usar mensaje embebido (embed)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="card-body" id="embedSettings">
+                                <div class="mb-3">
+                                    <label for="embedTitle" class="form-label">Título</label>
+                                    <input type="text" class="form-control" id="embedTitle" name="embed[title]"
+                                        value="<%= config.welcome.embed.title %>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="embedDescription" class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="embedDescription" name="embed[description]" 
+                                        rows="3"><%= config.welcome.embed.description %></textarea>
+                                    <div class="form-text">
+                                        Variables: {user} - Menciona al usuario, {server} - Nombre del servidor
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="embedColor" class="form-label">Color</label>
+                                    <input type="color" class="form-control form-control-color" id="embedColor" 
+                                        name="embed[color]" value="<%= config.welcome.embed.color || '#0099ff' %>">
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="embedThumbnail" 
+                                        name="embed[thumbnail]" <%= config.welcome.embed.thumbnail ? 'checked' : '' %>>
+                                    <label class="form-check-label" for="embedThumbnail">
+                                        Mostrar miniatura del avatar del usuario
+                                    </label>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="embedFooter" class="form-label">Pie de página</label>
+                                    <input type="text" class="form-control" id="embedFooter" name="embed[footer]"
+                                        value="<%= config.welcome.embed.footer %>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary me-md-2" id="previewBtn">
+                                <i class="fas fa-eye me-1"></i> Vista previa
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Guardar cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vista previa del mensaje de bienvenida</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Esperar a que Bootstrap esté disponible
+        const waitForBootstrap = () => {
+            if (typeof bootstrap !== 'undefined') {
+                initializePage();
+            } else {
+                setTimeout(waitForBootstrap, 100);
+            }
+        };
+
+        const initializePage = () => {
+            // Toggle del estado del mensaje de bienvenida
+            const welcomeEnabled = document.getElementById('welcomeEnabled');
+            const enabledInput = document.getElementById('enabled');
+
+            welcomeEnabled.addEventListener('change', function() {
+                const isEnabled = this.checked;
+                enabledInput.value = isEnabled;
+                this.nextElementSibling.textContent = isEnabled ? 'Activado' : 'Desactivado';
+            });
+
+            // Toggle de la configuración del embed
+            const embedEnabled = document.getElementById('embedEnabled');
+            const embedSettings = document.getElementById('embedSettings');
+
+            function toggleEmbedSettings() {
+                embedSettings.style.display = embedEnabled.checked ? 'block' : 'none';
+            }
+
+            embedEnabled.addEventListener('change', toggleEmbedSettings);
+            toggleEmbedSettings(); // Inicializar estado
+
+            // Cargar canales del servidor
+            async function loadChannels() {
+                try {
+                    const response = await fetch(`/api/servers/<%= guild.id %>/channels`);
+                    const data = await response.json();
+
+                    const channelSelect = document.getElementById('channelId');
+                    channelSelect.innerHTML = '<option value="">Seleccionar canal...</option>';
+                    if (data.success && data.channels) {
+                        data.channels.forEach(channel => {
+                            const option = document.createElement('option');
+                            option.value = channel.id;
+                            option.textContent = `#${channel.name}`;
+                            if (channel.id === '<%= config.welcome.channelId %>') {
+                                option.selected = true;
+                            }
+                            channelSelect.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error al cargar canales:', error);
+                }
+            }
+
+            // Enviar formulario
+            const welcomeForm = document.getElementById('welcomeForm');
+            welcomeForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const data = {
+                    enabled: formData.get('enabled') === 'true',
+                    channelId: formData.get('channelId'),
+                    message: formData.get('message'),
+                    imageUrl: formData.get('imageUrl'),
+                    embed: {
+                        enabled: formData.get('embed[enabled]') === 'on',
+                        title: formData.get('embed[title]'),
+                        description: formData.get('embed[description]'),
+                        color: formData.get('embed[color]'),
+                        thumbnail: formData.get('embed[thumbnail]') === 'on',
+                        footer: formData.get('embed[footer]')
+                    }
+                };
+
+                try {
+                    const response = await fetch(`/api/servers/<%= guild.id %>/welcome`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Configuración guardada correctamente');
+                    } else {
+                        alert(result.error || 'Error al guardar la configuración');
+                    }
+                } catch (error) {
+                    console.error('Error al guardar la configuración:', error);
+                    alert('Error al guardar la configuración');
+                }
+            });
+
+            // Vista previa
+            const previewBtn = document.getElementById('previewBtn');
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            const previewContent = document.getElementById('previewContent');
+
+            previewBtn.addEventListener('click', function() {
+                const formData = new FormData(welcomeForm);
+                const isEmbed = formData.get('embed[enabled]') === 'on';
+
+                let previewHtml = '';
+
+                if (isEmbed) {
+                    previewHtml = `
+                        <div class="discord-embed" style="border-left: 4px solid ${formData.get('embed[color]') || '#0099ff'}; padding-left: 12px; margin: 8px 0;">
+                            <div class="embed-title" style="font-weight: 600; color: #fff; margin-bottom: 8px;">
+                                ${formData.get('embed[title]') || '¡Bienvenido!'}
+                            </div>
+                            <div class="embed-description" style="color: #dcddde; margin-bottom: 8px;">
+                                ${(formData.get('embed[description]') || 'Bienvenido {user} a {server}!').replace('{user}', '<span style="color: #00b0f4;">@Usuario</span>').replace('{server}', `<strong><%= guild.name %></strong>`)}
+                            </div>
+                            ${formData.get('embed[footer]') ? `
+                                <div class="embed-footer" style="font-size: 0.85em; color: #a3a6aa; margin-top: 8px;">
+                                    ${formData.get('embed[footer]')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    previewHtml = `
+                        <div class="discord-message" style="color: #dcddde;">
+                            ${(formData.get('message') || '¡Bienvenido {user} a {server}!').replace('{user}', '<span style="color: #00b0f4;">@Usuario</span>').replace('{server}', `<strong><%= guild.name %></strong>`)}
+                        </div>
+                    `;
+                    if (formData.get('imageUrl')) {
+                        previewHtml += `
+                            <div class="mt-3">
+                                <img src="${formData.get('imageUrl')}" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        `;
+                    }
+                }
+
+                previewContent.innerHTML = previewHtml;
+                previewModal.show();
+            });
+
+            // Cargar canales al iniciar
+            loadChannels();
+        };
+
+        // Iniciar la espera de Bootstrap
+        waitForBootstrap();
+    });
+</script>
