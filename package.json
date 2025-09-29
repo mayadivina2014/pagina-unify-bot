@@ -12,9 +12,18 @@
     "dev": "nodemon index.js",
     "init-db": "node scripts/init-mongo.js",
     "dev:full": "npm run init-db && npm run dev",
+    "keep-alive": "node keep-alive.js",
+    "start:with-keepalive": "node index.js & node keep-alive.js",
     "build": "echo 'No build step required'"
   },
-  "keywords": ["discord", "bot", "dni", "unify", "nodejs", "express"],
+  "keywords": [
+    "discord",
+    "bot",
+    "dni",
+    "unify",
+    "nodejs",
+    "express"
+  ],
   "author": "Tu Nombre",
   "license": "MIT",
   "dependencies": {

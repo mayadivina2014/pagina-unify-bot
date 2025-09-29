@@ -1,19 +1,44 @@
+/**
+ * Unify Bot - Main JavaScript
+ * 
+ * Este archivo maneja la funcionalidad interactiva del sitio web,
+ * incluyendo el menú móvil, el tema oscuro, animaciones y más.
+ */
+
 // Configuración de la aplicación Discord
 const DISCORD_CLIENT_ID = '1397383318063812678';
 const DISCORD_REDIRECT_URI = encodeURIComponent(window.location.origin + '/auth/discord/callback');
 const DISCORD_SCOPE = 'identify email guilds';
 const DISCORD_AUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${DISCORD_REDIRECT_URI}&response_type=code&scope=${DISCORD_SCOPE}`;
 
-// Main initialization
+// Constantes
+const THEME_KEY = 'unify-theme';
+const THEME_LIGHT = 'light';
+const THEME_DARK = 'dark';
+const PREFERS_DARK = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+// Elementos del DOM
+let menuToggle, mobileMenuToggle, navLinks, overlay, themeToggle, loginButton, heroLoginButton, html, faqItems;
+
+// Inicialización principal
 document.addEventListener('DOMContentLoaded', function() {
-    // Get DOM elements
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-    const navContainer = document.getElementById('navContainer');
-    const themeToggle = document.getElementById('themeToggle');
-    const loginButton = document.getElementById('loginButton');
-    const heroLoginButton = document.getElementById('heroLoginButton');
-    const html = document.documentElement;
+    // Obtener elementos del DOM
+    menuToggle = document.querySelector('.mobile-menu-toggle');
+    mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    navLinks = document.querySelector('.nav-links');
+    overlay = document.querySelector('.overlay');
+    themeToggle = document.querySelector('.theme-toggle');
+    loginButton = document.querySelector('.btn-login');
+    heroLoginButton = document.querySelector('.hero-cta .btn-primary');
+    faqItems = document.querySelectorAll('.faq-item');
+    html = document.documentElement;
+    
+    // Inicializar componentes
+    initTheme();
+    initMobileMenu();
+    initFAQ();
+    initAnimations();
+    initSmoothScroll();
     
     // Inicializar botones de inicio de sesión
     if (loginButton) {
@@ -23,6 +48,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (heroLoginButton) {
         heroLoginButton.addEventListener('click', handleLogin);
     }
+    
+    // Manejar el botón de cambio de tema
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+    
+    // Verificar respuesta de autenticación
+    checkAuthResponse();
+    
+    // Inicializar contadores animados
+    initCounters();
+    
+    // Cargar más elementos al hacer scroll
+    window.addEventListener('scroll', handleScroll);
     
     // Función para manejar el inicio de sesión
     function handleLogin() {
@@ -41,6 +80,217 @@ document.addEventListener('DOMContentLoaded', function() {
             if (loginButton) loginButton.innerHTML = originalText;
             if (heroLoginButton) heroLoginButton.innerHTML = originalText;
         }, 3000);
+    }
+    
+    // Inicializar el tema
+    function initTheme() {
+        const savedTheme = localStorage.getItem(THEME_KEY) || (PREFERS_DARK ? THEME_DARK : THEME_LIGHT);
+        setTheme(savedTheme);
+        updateThemeIcon(savedTheme);
+        
+        // Escuchar cambios en la preferencia del sistema
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem(THEME_KEY)) {
+                const newTheme = e.matches ? THEME_DARK : THEME_LIGHT;
+                setTheme(newTheme);
+                updateThemeIcon(newTheme);
+            }
+        });
+    }
+    
+    // Cambiar entre temas claro y oscuro
+    function toggleTheme() {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === THEME_DARK ? THEME_LIGHT : THEME_DARK;
+        setTheme(newTheme);
+        updateThemeIcon(newTheme);
+        localStorage.setItem(THEME_KEY, newTheme);
+    }
+    
+    // Establecer el tema
+    function setTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        document.body.classList.toggle('dark-mode', theme === THEME_DARK);
+    }
+    
+    // Actualizar el ícono del tema
+    function updateThemeIcon(theme) {
+        if (!themeToggle) return;
+        const icon = themeToggle.querySelector('i');
+        if (icon) {
+            icon.className = theme === THEME_DARK ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    }
+    
+    // Inicializar el menú móvil
+    function initMobileMenu() {
+        if (!mobileMenuToggle || !navLinks || !overlay) return;
+        
+        const toggleMenu = () => {
+            const isOpen = navLinks.classList.toggle('active');
+            mobileMenuToggle.setAttribute('aria-expanded', isOpen);
+            overlay.classList.toggle('active', isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+            
+            // Cambiar ícono del botón
+            const icon = mobileMenuToggle.querySelector('i');
+            if (icon) {
+                icon.className = isOpen ? 'fas fa-times' : 'fas fa-bars';
+            }
+        };
+        
+        // Toggle del menú
+        mobileMenuToggle.addEventListener('click', toggleMenu);
+        
+        // Cerrar menú al hacer clic en un enlace
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) {
+                    toggleMenu();
+                }
+            });
+        });
+        
+        // Cerrar menú al hacer clic en el overlay
+        overlay.addEventListener('click', toggleMenu);
+        
+        // Cerrar menú con la tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    }
+    
+    // Inicializar el acordeón de preguntas frecuentes
+    function initFAQ() {
+        if (!faqItems.length) return;
+        
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            if (!question) return;
+            
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Cerrar otros ítems
+                faqItems.forEach(i => {
+                    if (i !== item) {
+                        i.classList.remove('active');
+                    }
+                });
+                
+                // Alternar el ítem actual
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    }
+    
+    // Inicializar animaciones
+    function initAnimations() {
+        // Configuración del Intersection Observer para animaciones al hacer scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        // Observar elementos con la clase 'animate-on-scroll'
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+    }
+    
+    // Inicializar scroll suave para enlaces internos
+    function initSmoothScroll() {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const headerHeight = document.querySelector('.header')?.offsetHeight || 0;
+                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - (headerHeight + 20);
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    }
+    
+    // Inicializar contadores animados
+    function initCounters() {
+        const counters = document.querySelectorAll('.stat-number');
+        if (!counters.length) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = +entry.target.getAttribute('data-target');
+                    const suffix = entry.target.getAttribute('data-suffix') || '';
+                    animateValue(entry.target, 0, target, 2000, suffix);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        counters.forEach(counter => observer.observe(counter));
+    }
+    
+    // Función para animar valores numéricos
+    function animateValue(element, start, end, duration, suffix = '') {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString() + suffix;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+    
+    // Manejar scroll infinito o carga perezosa
+    function handleScroll() {
+        // Ejemplo de carga perezosa de imágenes
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        lazyImages.forEach(img => {
+            if (isInViewport(img)) {
+                img.src = img.getAttribute('data-src');
+                img.removeAttribute('data-src');
+            }
+        });
+        
+        // Aquí podrías agregar más lógica de carga bajo demanda
+    }
+    
+    // Verificar si un elemento está en el viewport
+    function isInViewport(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
     }
     
     // Verificar si hay un código de autorización en la URL (respuesta de Discord)

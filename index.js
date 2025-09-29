@@ -660,7 +660,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
         ? `https://${process.env.FRONTEND_URL || 'unify-dashboard.onrender.com'}`
         : `http://localhost:${PORT}`;
 
-    console.log(`🚀 Servidor iniciado en ${NODE_ENV === 'production' ? 'producción' : 'desarrollo'}`);
+    console.log(`🚀 Servidor iniciado en ${process.env.NODE_ENV === 'production' ? 'producción' : 'desarrollo'}`);
     console.log(`📍 Servidor escuchando en ${baseUrl}`);
     console.log('📋 Rutas disponibles:');
     console.log(`   GET  /`);
