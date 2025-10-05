@@ -11,11 +11,10 @@
                     <a href="/dashboard/<%= guild.id %>" class="list-group-item list-group-item-action active">
                         <i class="fas fa-door-open me-2"></i>Mensaje de Bienvenida
                     </a>
-                </div>
+                    </div>
             </div>
         </div>
 
-        <!-- Contenido principal -->
         <div class="col-md-9">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
@@ -32,6 +31,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="card-body">
                     <form id="welcomeForm">
                         <input type="hidden" name="enabled" id="enabled" value="<%= config.welcome.enabled %>">
@@ -44,11 +44,22 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="welcomeMessage" class="form-label">Mensaje de bienvenida</label>
-                            <textarea class="form-control" id="welcomeMessage" name="message" rows="3" 
-                                placeholder="¡Bienvenido {user} a {server}!"><%= config.welcome.message %></textarea>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="welcomeMessage" class="form-label mb-0">Mensaje de bienvenida (Texto simple)</label>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="testWelcomeMessage">
+                                        <i class="fas fa-paper-plane me-1"></i> Probar mensaje
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                        data-bs-toggle="modal" data-bs-target="#variablesModal">
+                                        <i class="fas fa-code me-1"></i> Variables disponibles
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea class="form-control mb-2" id="welcomeMessage" name="message" rows="3" 
+                                placeholder="¡Bienvenido {user.mention} a {server.name}!"><%= config.welcome.message %></textarea>
                             <div class="form-text">
-                                Variables disponibles: {user} - Menciona al usuario, {server} - Nombre del servidor
+                                Usa llaves {} para incluir variables. Ej: ¡Hola {user.mention}!
                             </div>
                         </div>
 
@@ -73,27 +84,32 @@
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" role="switch" id="embedEnabled"
                                         name="embed[enabled]" <%= config.welcome.embed.enabled ? 'checked' : '' %>>
-                                    <label class="form-check-label" for="embedEnabled">
-                                        Usar mensaje embebido (embed)
+                                    <label class="form-check-label fw-bold" for="embedEnabled">
+                                        Usar mensaje embebido (Embed)
                                     </label>
                                 </div>
                             </div>
                             <div class="card-body" id="embedSettings">
                                 <div class="mb-3">
-                                    <label for="embedTitle" class="form-label">Título</label>
+                                    <label for="embedTitle" class="form-label">Título del Embed</label>
                                     <input type="text" class="form-control" id="embedTitle" name="embed[title]"
                                         value="<%= config.welcome.embed.title %>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="embedDescription" class="form-label">Descripción</label>
-                                    <textarea class="form-control" id="embedDescription" name="embed[description]" 
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="embedDescription" class="form-label mb-0">Descripción del Embed</label>
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#variablesModal">
+                                            <i class="fas fa-code me-1"></i> Variables disponibles
+                                        </button>
+                                    </div>
+                                    <textarea class="form-control mb-2" id="embedDescription" name="embed[description]" 
                                         rows="3"><%= config.welcome.embed.description %></textarea>
                                     <div class="form-text">
-                                        Variables: {user} - Menciona al usuario, {server} - Nombre del servidor
+                                        Usa llaves {} para incluir variables. Ej: ¡Hola {user.mention}!
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="embedColor" class="form-label">Color</label>
+                                    <label for="embedColor" class="form-label">Color del Borde</label>
                                     <input type="color" class="form-control form-control-color" id="embedColor" 
                                         name="embed[color]" value="<%= config.welcome.embed.color || '#0099ff' %>">
                                 </div>
@@ -105,7 +121,7 @@
                                     </label>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="embedFooter" class="form-label">Pie de página</label>
+                                    <label for="embedFooter" class="form-label">Pie de página (Footer)</label>
                                     <input type="text" class="form-control" id="embedFooter" name="embed[footer]"
                                         value="<%= config.welcome.embed.footer %>">
                                 </div>
@@ -126,6 +142,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -142,40 +159,350 @@
     </div>
 </div>
 
+<div class="modal fade" id="variablesModal" tabindex="-1" aria-labelledby="variablesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="variablesModalLabel">
+                    <i class="fas fa-code me-2"></i>Variables Disponibles
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Haz clic en cualquier variable para copiarla e insertarla en el campo activo.
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-user me-2"></i>Usuario
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{user.name}</code>
+                                        <small class="text-muted">Nombre de usuario</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{user.tag}</code>
+                                        <small class="text-muted">Usuario#0000</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{user.mention}</code>
+                                        <small class="text-muted">@Usuario</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{user.id}</code>
+                                        <small class="text-muted">ID del usuario</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <i class="fas fa-server me-2"></i>Servidor
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{server.name}</code>
+                                        <small class="text-muted">Nombre del servidor</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{server.id}</code>
+                                        <small class="text-muted">ID del servidor</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{server.memberCount}</code>
+                                        <small class="text-muted">Total de miembros</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-info text-white">
+                                <i class="far fa-calendar-alt me-2"></i>Fechas
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{date}</code>
+                                        <small class="text-muted">Fecha actual (dd/mm/aaaa)</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{time}</code>
+                                        <small class="text-muted">Hora actual (hh:mm:ss)</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{datetime}</code>
+                                        <small class="text-muted">Fecha y hora actual</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="far fa-comment-dots me-2"></i>Mensajes
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{welcome.message}</code>
+                                        <small class="text-muted">Mensaje de bienvenida</small>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <code class="variable-item" style="cursor: pointer;" title="Haz clic para copiar">{welcome.rules}</code>
+                                        <small class="text-muted">Recordatorio de reglas</small>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div id="toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastBody">
+                </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el modal de variables */
+    .variable-item {
+        transition: all 0.2s ease;
+    }
+    .variable-item:hover {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        padding: 2px 6px;
+    }
+    
+    /* Efecto hover en cards */
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .list-group-item {
+        transition: background-color 0.2s;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    /* Estilos de Discord Embed para la vista previa */
+    .discord-embed {
+        border-left: 4px solid #0099ff;
+        padding: 12px;
+        margin: 8px 0;
+        background: #2f3136; /* Color de fondo oscuro de Discord */
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+    }
+    .embed-title {
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+    .embed-description, .discord-message {
+        color: #dcddde;
+        white-space: pre-line;
+        margin-bottom: 8px;
+    }
+    .embed-footer {
+        font-size: 0.85em;
+        color: #a3a6aa;
+        margin-top: 8px;
+        border-top: 1px solid #40444b;
+        padding-top: 8px;
+    }
+    /* Estilos para las variables resaltadas en la vista previa */
+    .discord-embed strong, .discord-message strong {
+        color: #7289da; /* Color de Discord Blue */
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Esperar a que Bootstrap esté disponible
-        const waitForBootstrap = () => {
-            if (typeof bootstrap !== 'undefined') {
-                initializePage();
-            } else {
-                setTimeout(waitForBootstrap, 100);
+        // --- UTILIDADES ---
+        const getServerData = () => ({
+            id: '<%= guild.id %>',
+            name: escapeQuotes('<%= guild.name %>'),
+            memberCount: '<%= guild.memberCount || 100 %>'
+        });
+
+        function escapeQuotes(str) {
+            return str.replace(/'/g, '\\\'');
+        }
+
+        // Muestra una notificación Toast (usando el Toast definido al final del EJS)
+        function showToast(message, isSuccess = true) {
+            const toastEl = document.getElementById('toast');
+            const toastBody = document.getElementById('toastBody');
+            if (toastEl && toastBody) {
+                toastBody.textContent = message;
+                toastEl.className = `toast align-items-center text-white border-0 ${isSuccess ? 'bg-success' : 'bg-danger'}`;
+                const bsToast = new bootstrap.Toast(toastEl);
+                bsToast.show();
             }
+        }
+        
+        // --- MANEJO DE VARIABLES ---
+        
+        // Procesa y formatea las variables para la vista previa
+        const processVariables = (text) => {
+            if (!text) return '';
+            const serverData = getServerData();
+
+            return text
+                // Variables de usuario (simuladas)
+                .replace(/\{user\.name\}/g, '<span style="color: #00b0f4;">Usuario</span>')
+                .replace(/\{user\.tag\}/g, '<span style="color: #00b0f4;">Usuario#1234</span>')
+                .replace(/\{user\.mention\}/g, '<span style="color: #00b0f4;">@Usuario</span>')
+                .replace(/\{user\.id\}/g, '<span style="color: #00b0f4;">123456789012345678</span>')
+                // Variables de servidor
+                .replace(/\{server\.name\}/g, `<strong>${serverData.name}</strong>`)
+                .replace(/\{server\.id\}/g, serverData.id)
+                .replace(/\{server\.memberCount\}/g, serverData.memberCount)
+                // Fechas
+                .replace(/\{date\}/g, new Date().toLocaleDateString())
+                .replace(/\{time\}/g, new Date().toLocaleTimeString())
+                .replace(/\{datetime\}/g, new Date().toLocaleString())
+                // Variables antiguas (para compatibilidad)
+                .replace(/\{user\}/g, '<span style="color: #00b0f4;">@Usuario</span>')
+                .replace(/\{server\}/g, `<strong>${serverData.name}</strong>`);
         };
 
+        // Función para insertar texto en el campo activo y copiar al portapapeles
+        function insertAndCopyVariable(variable) {
+            const activeElement = document.activeElement;
+            const successCopy = false; // Solo para mostrar la notificacion personalizada
+            
+            // 1. Insertar directamente en el campo activo
+            if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
+                const start = activeElement.selectionStart;
+                const end = activeElement.selectionEnd;
+                const text = activeElement.value;
+                
+                activeElement.value = `${text.substring(0, start)}${variable}${text.substring(end)}`;
+                
+                // Actualizar la posición del cursor
+                const newPosition = start + variable.length;
+                activeElement.selectionStart = activeElement.selectionEnd = newPosition;
+                
+                // Disparar evento de cambio (útil para frameworks o vistas previas)
+                const event = new Event('input', { bubbles: true });
+                activeElement.dispatchEvent(event);
+                
+                // 2. Copiar al portapapeles (para compatibilidad/uso externo)
+                const textarea = document.createElement('textarea');
+                textarea.value = variable;
+                textarea.style.position = 'fixed'; // Evita el scroll
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (err) {
+                    console.error('Error al copiar al portapapeles:', err);
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            } else {
+                 // Si no hay un campo activo, solo copia al portapapeles
+                 const textarea = document.createElement('textarea');
+                textarea.value = variable;
+                textarea.style.position = 'fixed';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (err) {
+                    console.error('Error al copiar al portapapeles:', err);
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+            
+            // 3. Mostrar notificación de éxito (mejor que un alert)
+            showToast('¡Variable copiada e insertada!', true);
+        }
+
+        // Manejar clic en variables
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('variable-item')) {
+                const variable = e.target.textContent;
+                
+                // Ocultar el modal de variables
+                const modal = bootstrap.Modal.getInstance(document.getElementById('variablesModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                insertAndCopyVariable(variable);
+            }
+        });
+        
+        // --- LÓGICA DE LA PÁGINA ---
+        
         const initializePage = () => {
-            // Toggle del estado del mensaje de bienvenida
             const welcomeEnabled = document.getElementById('welcomeEnabled');
             const enabledInput = document.getElementById('enabled');
-
-            welcomeEnabled.addEventListener('change', function() {
-                const isEnabled = this.checked;
-                enabledInput.value = isEnabled;
-                this.nextElementSibling.textContent = isEnabled ? 'Activado' : 'Desactivado';
-            });
-
-            // Toggle de la configuración del embed
             const embedEnabled = document.getElementById('embedEnabled');
             const embedSettings = document.getElementById('embedSettings');
+            const welcomeForm = document.getElementById('welcomeForm');
+            const previewBtn = document.getElementById('previewBtn');
+            const testWelcomeBtn = document.getElementById('testWelcomeMessage');
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            const previewContent = document.getElementById('previewContent');
 
+            // 1. Toggle del estado de bienvenida principal
+            if (welcomeEnabled && enabledInput) {
+                // Inicializa el estado del campo oculto al cargar
+                enabledInput.value = welcomeEnabled.checked; 
+
+                welcomeEnabled.addEventListener('change', function() {
+                    const isEnabled = this.checked;
+                    enabledInput.value = isEnabled; // Actualiza el campo oculto
+                    this.nextElementSibling.textContent = isEnabled ? 'Activado' : 'Desactivado';
+                });
+            }
+
+            // 2. Toggle de la configuración del embed
             function toggleEmbedSettings() {
                 embedSettings.style.display = embedEnabled.checked ? 'block' : 'none';
             }
 
             embedEnabled.addEventListener('change', toggleEmbedSettings);
-            toggleEmbedSettings(); // Inicializar estado
+            toggleEmbedSettings(); // Inicializa el estado al cargar
 
-            // Cargar canales del servidor
+            // 3. Cargar canales del servidor
             async function loadChannels() {
                 try {
                     const response = await fetch(`/api/servers/<%= guild.id %>/channels`);
@@ -184,11 +511,12 @@
                     const channelSelect = document.getElementById('channelId');
                     channelSelect.innerHTML = '<option value="">Seleccionar canal...</option>';
                     if (data.success && data.channels) {
+                        const currentChannelId = '<%= config.welcome.channelId %>';
                         data.channels.forEach(channel => {
                             const option = document.createElement('option');
                             option.value = channel.id;
                             option.textContent = `#${channel.name}`;
-                            if (channel.id === '<%= config.welcome.channelId %>') {
+                            if (channel.id === currentChannelId) {
                                 option.selected = true;
                             }
                             channelSelect.appendChild(option);
@@ -198,15 +526,16 @@
                     console.error('Error al cargar canales:', error);
                 }
             }
+            loadChannels();
 
-            // Enviar formulario
-            const welcomeForm = document.getElementById('welcomeForm');
+            // 4. Manejar el envío del formulario (Guardar)
             welcomeForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const formData = new FormData(this);
                 const data = {
-                    enabled: formData.get('enabled') === 'true',
+                    // El campo 'enabled' viene del input:hidden #enabled, actualizado por el switch
+                    enabled: formData.get('enabled') === 'true', 
                     channelId: formData.get('channelId'),
                     message: formData.get('message'),
                     imageUrl: formData.get('imageUrl'),
@@ -231,21 +560,17 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        alert('Configuración guardada correctamente');
+                        showToast('Configuración guardada correctamente', true);
                     } else {
-                        alert(result.error || 'Error al guardar la configuración');
+                        showToast(result.error || 'Error al guardar la configuración', false);
                     }
                 } catch (error) {
                     console.error('Error al guardar la configuración:', error);
-                    alert('Error al guardar la configuración');
+                    showToast('Error al guardar la configuración', false);
                 }
             });
 
-            // Vista previa
-            const previewBtn = document.getElementById('previewBtn');
-            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
-            const previewContent = document.getElementById('previewContent');
-
+            // 5. Vista Previa (Modal)
             previewBtn.addEventListener('click', function() {
                 const formData = new FormData(welcomeForm);
                 const isEmbed = formData.get('embed[enabled]') === 'on';
@@ -253,45 +578,116 @@
                 let previewHtml = '';
 
                 if (isEmbed) {
+                    const embedColor = formData.get('embed[color]') || '#0099ff';
+                    const embedTitle = formData.get('embed[title]') || '¡Bienvenido!';
+                    const embedDescription = processVariables(formData.get('embed[description]') || 'Bienvenido {user.mention} a {server.name}!');
+                    const embedFooter = formData.get('embed[footer]');
+                    
                     previewHtml = `
-                        <div class="discord-embed" style="border-left: 4px solid ${formData.get('embed[color]') || '#0099ff'}; padding-left: 12px; margin: 8px 0;">
-                            <div class="embed-title" style="font-weight: 600; color: #fff; margin-bottom: 8px;">
-                                ${formData.get('embed[title]') || '¡Bienvenido!'}
+                        <div class="discord-embed" style="border-left: 4px solid ${embedColor};">
+                            <div class="embed-title">
+                                ${embedTitle}
                             </div>
-                            <div class="embed-description" style="color: #dcddde; margin-bottom: 8px;">
-                                ${(formData.get('embed[description]') || 'Bienvenido {user} a {server}!').replace('{user}', '<span style="color: #00b0f4;">@Usuario</span>').replace('{server}', `<strong><%= guild.name %></strong>`)}
-                            </div>
-                            ${formData.get('embed[footer]') ? `
-                                <div class="embed-footer" style="font-size: 0.85em; color: #a3a6aa; margin-top: 8px;">
-                                    ${formData.get('embed[footer]')}
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
+                            <div class="embed-description">
+                                ${embedDescription}
+                            </div>`;
+
+                    if (embedFooter) {
+                        previewHtml += `
+                            <div class="embed-footer">
+                                ${processVariables(embedFooter)}
+                            </div>`;
+                    }
+                    
+                    previewHtml += '\n                        </div>';
                 } else {
-                    previewHtml = `
-                        <div class="discord-message" style="color: #dcddde;">
-                            ${(formData.get('message') || '¡Bienvenido {user} a {server}!').replace('{user}', '<span style="color: #00b0f4;">@Usuario</span>').replace('{server}', `<strong><%= guild.name %></strong>`)}
-                        </div>
-                    `;
+                    const message = processVariables(formData.get('message') || '¡Bienvenido {user.mention} a {server.name}!');
+                    
+                    previewHtml = `<div class="discord-message">${message}</div>`;
+                    
                     if (formData.get('imageUrl')) {
                         previewHtml += `
                             <div class="mt-3">
-                                <img src="${formData.get('imageUrl')}" class="img-fluid rounded" style="max-height: 200px;">
-                            </div>
-                        `;
+                                <img src="${formData.get('imageUrl')}" class="img-fluid rounded" style="max-height: 200px; max-width: 100%;">
+                            </div>`;
                     }
                 }
 
                 previewContent.innerHTML = previewHtml;
                 previewModal.show();
             });
+            
+            // 6. Probar Mensaje (Envío real a Discord)
+            if (testWelcomeBtn) {
+                const originalButtonText = testWelcomeBtn.innerHTML;
+                
+                testWelcomeBtn.addEventListener('click', async function() {
+                    const welcomeMessage = document.getElementById('welcomeMessage')?.value || '';
+                    const embedEnabled = document.getElementById('embedEnabled')?.checked || false;
+                    
+                    // Mostrar indicador de carga
+                    testWelcomeBtn.disabled = true;
+                    testWelcomeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Enviando...';
 
-            // Cargar canales al iniciar
-            loadChannels();
+                    // Preparar datos
+                    let testData = {
+                        message: welcomeMessage,
+                        isEmbed: embedEnabled
+                    };
+                    
+                    if (embedEnabled) {
+                        testData.embed = {
+                            title: document.getElementById('embedTitle')?.value || '',
+                            description: document.getElementById('embedDescription')?.value || '',
+                            // Convert color to number (remove # and parse as hex)
+                            color: parseInt(document.getElementById('embedColor')?.value.replace('#', '') || '5865F2', 16),
+                            thumbnail: document.getElementById('embedThumbnail')?.checked || false,
+                            footer: document.getElementById('embedFooter')?.value || '',
+                            image: document.getElementById('imageUrl')?.value || ''
+                        };
+                    }
+                    
+                    try {
+                        console.log('Sending test data:', testData);
+                        const response = await fetch(`/api/servers/${'<%= guild.id %>'}/test-welcome`, {
+                            credentials: 'include',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(testData)
+                        });
+
+                        console.log('Response status:', response.status);
+                        const responseData = await response.json().catch(() => ({}));
+                        console.log('Response data:', responseData);
+
+                        if (response.ok) {
+                            showToast('¡Mensaje de prueba enviado con éxito!', true);
+                        } else {
+                            throw new Error(responseData.error || responseData.message || `Error ${response.status}: ${response.statusText}`);
+                        }
+                    } catch (error) {
+                        console.error('Error al probar el mensaje de bienvenida:', error);
+                        showToast('Error al probar el mensaje de bienvenida: ' + (error.message || 'Error desconocido'), false);
+                    } finally {
+                        testWelcomeBtn.disabled = false;
+                        testWelcomeBtn.innerHTML = originalButtonText;
+                    }
+                });
+            }
         };
 
-        // Iniciar la espera de Bootstrap
+        // Esperar a que Bootstrap cargue
+        const waitForBootstrap = () => {
+            if (typeof bootstrap !== 'undefined') {
+                initializePage();
+            } else {
+                setTimeout(waitForBootstrap, 100);
+            }
+        };
+        
         waitForBootstrap();
     });
 </script>

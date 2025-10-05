@@ -57,31 +57,50 @@ exports.getServerChannels = async (guildId) => {
         console.error('Error al obtener canales del servidor:', error);
         return { success: false, error: 'No se pudieron cargar los canales del servidor' };
     }
-};
-
+}
 // Actualizar configuración de bienvenida
 exports.updateWelcomeConfig = async (guildId, welcomeData) => {
     try {
-        const updateData = {
-            guildName: welcomeData.guildName,
-            'welcome': welcomeData.welcome
+        // Ensure default values for variables
+        const defaultWelcome = {
+            enabled: false,
+            message: '¡Bienvenido {user.mention} al servidor!',
+            channelId: '',
+            imageUrl: '',
+            embed: {
+                enabled: true,
+                title: '¡Bienvenido!',
+                description: 'Bienvenido {user.mention} a {guild.name}!',
+                color: '#0099ff',
+                thumbnail: true,
+                footer: 'Gracias por unirte'
+            }
         };
 
-        const config = await ServerConfig.findOneAndUpdate(
+        // Merge with provided data
+        const config = {
+            ...defaultWelcome,
+            ...welcomeData,
+            embed: {
+                ...defaultWelcome.embed,
+                ...(welcomeData.embed || {})
+            }
+        };
+
+        // Save to database
+        const updatedConfig = await ServerConfig.findOneAndUpdate(
             { guildId },
-            { $set: updateData },
+            { $set: { welcome: config } },
             { new: true, upsert: true }
         );
-        
-        // Aquí podrías agregar lógica para actualizar los comandos de barra, etc.
-        
+
         return { 
             success: true, 
             config,
             message: 'Configuración de bienvenida actualizada correctamente'
         };
     } catch (error) {
-        console.error('Error al actualizar configuración de bienvenida:', error);
+        console.error('Error updating welcome config:', error);
         return { 
             success: false, 
             error: 'Error al guardar la configuración',
