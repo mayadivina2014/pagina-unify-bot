@@ -310,9 +310,20 @@ app.get('/favicon.ico', (req, res) => {
     res.redirect('/images/Logo_pagina.png');
 });
 
+// Ruta para keep-alive
+app.get('/api/keep-alive', (req, res) => {
+    // Solo registrar el ping en desarrollo para no llenar los logs
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`[${new Date().toISOString()}] Keep-alive ping received`);
+    }
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString() 
+    });
+});
+
 // Ruta principal
 app.get('/', (req, res) => {
-    // Asegurarse de que el objeto de usuario esté disponible
     const user = req.user ? {
         id: req.user.id,
         username: req.user.username,
@@ -691,7 +702,10 @@ app.post('/api/servers/:serverId/test-welcome', async (req, res) => {
         
         let discordResponse;
         
-        if (isEmbed && embed) {
+        // Asegurarse de que embed sea un objeto
+        if (!embed) embed = {};
+        
+        if (isEmbed) {
             try {
                 // Obtener información del usuario con valores por defecto
                 const userId = req.user.discordId || req.user.id || '123456789012345678';
@@ -793,23 +807,142 @@ app.post('/api/servers/:serverId/test-welcome', async (req, res) => {
                     };
                 }
                 
-                console.log('Enviando embed a Discord:', JSON.stringify(embedData, null, 2));
+                // Obtener el mensaje de texto con las variables reemplazadas
+                let content = message ? replaceVariables(message) : '';
                 
-                // Enviar embed al canal
-                discordResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bot ${botToken}`,
-                        'Content-Type': 'application/json',
-                        'User-Agent': 'UnifyBot (https://github.com/yourusername/unifybot, 1.0.0)'
-                    },
-                    body: JSON.stringify({
-                        embeds: [embedData],
-                        allowed_mentions: {
-                            users: [req.user.discordId]
+                // Formatear el mensaje según el ejemplo proporcionado
+                if (content) {
+                    content = content
+                        .replace(/\n\s*\n/g, '\n\n') // Asegurar doble salto de línea entre párrafos
+                        .replace(/^\s+|\s+$/g, ''); // Eliminar espacios al inicio y final
+                }
+
+                // Obtener el color del embed o usar el color por defecto
+                let embedColorValue = 0x2F3136; // Color gris oscuro por defecto
+                if (embed.color) {
+                    if (typeof embed.color === 'string') {
+                        // Si es un string, quitar el # si existe y convertir a número
+                        embedColorValue = parseInt(embed.color.replace('#', ''), 16) || 0x2F3136;
+                    } else if (typeof embed.color === 'number') {
+                        // Si ya es un número, usarlo directamente
+                        embedColorValue = embed.color;
+                    }
+                }
+
+                // Configuración del mensaje
+                const messageData = {
+                    content: content || undefined,
+                    embeds: [],
+                    allowed_mentions: {
+                        parse: ['users', 'roles'],
+                        users: [req.user.discordId].filter(Boolean) // Solo agregar si existe
+                    }
+                };
+
+                // Solo agregar el embed si tiene título o descripción
+                const embedTitle = embed.title ? replaceVariables(embed.title) : '';
+                const embedDescription = embed.description ? replaceVariables(embed.description) : '';
+                
+                if (embedTitle || embedDescription) {
+                    const embedObj = {
+                        title: embedTitle || undefined,
+                        description: embedDescription || undefined,
+                        color: embedColorValue,
+                        timestamp: new Date().toISOString(),
+                        footer: {
+                            text: `ID de usuario: ${req.user.discordId}`,
+                            icon_url: req.user.avatarURL || undefined
                         }
-                    })
-                });
+                    };
+
+                    // Añadir thumbnail si está habilitado
+                    if (embed.thumbnail) {
+                        embedObj.thumbnail = {
+                            url: `https://cdn.discordapp.com/avatars/${req.user.discordId}/${req.user.avatar}.png`
+                        };
+                    }
+
+                    // Añadir imagen/banner si está definida
+                    if (embed.image) {
+                        // Si la URL de la imagen termina con .png, .jpg, .jpeg, .gif, usarla como imagen
+                        if (/\.(png|jpg|jpeg|gif)(\?.*)?$/i.test(embed.image)) {
+                            embedObj.image = {
+                                url: embed.image
+                            };
+                        }
+                        // Si es un enlace de Discord, usarlo como banner
+                        else if (embed.image.startsWith('https://cdn.discordapp.com/')) {
+                            embedObj.image = {
+                                url: embed.image
+                            };
+                        }
+                    }
+
+                    // Añadir footer si está definido
+                    if (embed.footer) {
+                        embedObj.footer = {
+                            text: replaceVariables(embed.footer),
+                            icon_url: req.user.avatarURL || undefined
+                        };
+                    }
+
+                    messageData.embeds.push(embedObj);
+                }
+
+                // Asegurarse de que el contenido no esté vacío si no hay embed
+                if ((!content || content.trim() === '') && messageData.embeds.length === 0) {
+                    messageData.content = '¡Bienvenido/a! ' + (req.user.discordId ? `<@${req.user.discordId}>` : '');
+                    messageData.embeds = []; // Asegurarse de que no haya embeds vacíos
+                } else if (content && req.user.discordId) {
+                    // Asegurar que el usuario sea mencionable en el contenido
+                    messageData.content = content.replace(/{user.mention}/g, `<@${req.user.discordId}>`);
+                }
+
+                console.log('Enviando mensaje a Discord:', JSON.stringify(messageData, null, 2));
+                
+                try {
+                    discordResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bot ${botToken}`,
+                            'Content-Type': 'application/json',
+                            'User-Agent': 'UnifyBot (https://github.com/yourusername/unifybot, 1.0.0)'
+                        },
+                        body: JSON.stringify(messageData)
+                    });
+
+                    const responseData = await discordResponse.json().catch(() => ({}));
+                    
+                    if (!discordResponse.ok) {
+                        console.error('Error de la API de Discord:', {
+                            status: discordResponse.status,
+                            statusText: discordResponse.statusText,
+                            error: responseData
+                        });
+                        
+                        let errorMessage = 'Error al enviar el mensaje de prueba';
+                        if (responseData.message) {
+                            errorMessage += `: ${responseData.message}`;
+                        } else if (discordResponse.status === 403) {
+                            errorMessage = 'El bot no tiene permisos para enviar mensajes en este canal';
+                        } else if (discordResponse.status === 404) {
+                            errorMessage = 'No se encontró el canal. Asegúrate de que el bot tenga acceso al canal.';
+                        }
+                        
+                        return res.status(400).json({ 
+                            success: false, 
+                            error: errorMessage,
+                            discordError: responseData
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error al enviar el mensaje a Discord:', error);
+                    return res.status(500).json({ 
+                        success: false, 
+                        error: 'Error al conectar con Discord',
+                        details: error.message 
+                    });
+                }
             } catch (embedError) {
                 console.error('Error al construir el embed:', embedError);
                 return res.status(400).json({ 

@@ -24,7 +24,6 @@ let menuToggle, mobileMenuToggle, navLinks, overlay, themeToggle, loginButton, h
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener elementos del DOM
     menuToggle = document.querySelector('.mobile-menu-toggle');
-    mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
     navLinks = document.querySelector('.nav-links');
     overlay = document.querySelector('.overlay');
     themeToggle = document.querySelector('.theme-toggle');

@@ -51,13 +51,75 @@ body {
   max-width: 1400px;
   margin: 0 auto;
 }
-.dashboard-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
-.title-group h1{font-size:20px;margin:0}
-.title-group p{margin:0;font-size:13px;color:var(--muted)}
-.controls{display:flex;gap:10px;align-items:center}
-.search{display:flex;align-items:center;background:var(--card);border-radius:999px;padding:6px 10px;border:1px solid #e9edf3}
-[data-theme="dark"] .search{border:1px solid #404040}
-.search input{border:0;outline:0;background:transparent;padding:6px;width:200px}
+/* Dashboard Top Bar */
+.dashboard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem 0;
+}
+
+.title-group h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary);
+}
+
+.title-group p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Search Bar */
+.search {
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
+}
+
+.search i {
+  color: var(--text-muted);
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 0.4rem 0;
+  width: 200px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.search input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
 .badge{background:linear-gradient(90deg,var(--primary),var(--primary-dark));color:white;padding:6px 10px;border-radius:999px;font-weight:600}
 /* Buttons */
 .btn {
@@ -385,9 +447,9 @@ body {
 <div id="toast" class="toast" role="status" aria-atomic="true"></div>
 
 <script>
-(function(){
   'use strict';
-
+  
+  (function() {
   // Elementos DOM
   const serversGrid = document.getElementById('serversGrid');
   const refreshButton = document.getElementById('refreshButton');
@@ -598,62 +660,117 @@ body {
 
   // Botón de actualizar
   if (refreshButton) {
-    refreshButton.addEventListener('click', function() {
+    let isRefreshing = false;
+    
+    refreshButton.addEventListener('click', async function() {
+      if (isRefreshing) return;
+      
+      isRefreshing = true;
       refreshButton.disabled = true;
-      const oldIcon = refreshIcon.innerHTML;
-      refreshIcon.innerHTML = '<span class="spinner"></span>';
-
-      // Intentar obtener guilds via API
-      fetch('/api/guilds', {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-      .then(response => {
-        if (response.ok) return response.json();
-        throw new Error('no-json');
-      })
-      .then(data => {
-        renderGuilds(data);
-        showToast('Lista de servidores actualizada');
-      })
-      .catch(() => {
-        // Fallback: usar endpoint de refresh
-        return fetch('/dashboard/refresh', {
-          method: 'POST',
+      refreshIcon.classList.add('fa-spin');
+      
+      try {
+        // Mostrar notificación de carga
+        showToast('Actualizando lista de servidores...', 5000);
+        
+        // Intentar obtener guilds via API
+        const response = await fetch('/api/guilds', {
+          method: 'GET',
           headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-        .then(res => {
-          if (res.ok) {
-            return fetch('/api/guilds', {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          renderGuilds(data);
+          showToast('Lista de servidores actualizada');
+        } else {
+          // Fallback: usar endpoint de refresh
+          const refreshResponse = await fetch('/dashboard/refresh', {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Cache-Control': 'no-cache'
+            }
+          });
+          
+          if (refreshResponse.ok) {
+            const guildsResponse = await fetch('/api/guilds', {
               method: 'GET',
               headers: {
                 'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-              }
-            })
-            .then(r2 => r2.ok ? r2.json() : Promise.reject())
-            .then(d2 => {
-              renderGuilds(d2);
+                'X-Requested-With': 'XMLHttpRequest',
+                'Cache-Control': 'no-cache'
+              },
+              cache: 'no-store'
+            });
+            
+            if (guildsResponse.ok) {
+              const data = await guildsResponse.json();
+              renderGuilds(data);
               showToast('Lista de servidores actualizada');
-            })
-            .catch(() => location.reload());
+            } else {
+              throw new Error('Failed to fetch guilds after refresh');
+            }
           } else {
-            location.reload();
+            throw new Error('Refresh failed');
           }
-        })
-        .catch(() => location.reload());
-      })
-      .finally(() => {
+        }
+      } catch (error) {
+        console.error('Error refreshing guilds:', error);
+        showToast('Error al actualizar. Recargando página...', 2000);
+        setTimeout(() => location.reload(), 2000);
+      } finally {
+        isRefreshing = false;
         refreshButton.disabled = false;
-        refreshIcon.innerHTML = oldIcon;
+        refreshIcon.classList.remove('fa-spin');
+      }
+    });
+  }
+
+  // Inicialización del tema y otros eventos
+  initTheme();
+  
+  // Inicializar búsqueda si existe el input
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const serverItems = document.querySelectorAll('.card');
+      
+      serverItems.forEach(item => {
+        const serverName = item.getAttribute('data-name') || '';
+        if (serverName.includes(searchTerm)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
       });
     });
   }
 
-})();
+  // Inicializar el tema toggle
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+
+  // Inicialización de la página
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPage);
+  } else {
+    initPage();
+  }
+
+  function initPage() {
+    // Código de inicialización aquí
+  }
+})(window, document);
 </script>
+
+<!-- Script de Keep-Alive para mantener la sesión activa -->
+<script src="/js/keep-alive.js"></script>

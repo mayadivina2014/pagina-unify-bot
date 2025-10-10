@@ -297,7 +297,24 @@
             border-color: var(--border-color);
         }
         
-        [data-bs-theme="dark"] .form-control, 
+        /* Search bar in dark mode */
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-control:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        [data-bs-theme="dark"] .form-control::placeholder {
+            color: var(--text-muted);
+            opacity: 1;
+        }
+        
+        [data-bs-theme="dark"] .input-group-text {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
         [data-bs-theme="dark"] .form-select {
             background-color: #40444B;
             border-color: #202225;
@@ -408,5 +425,8 @@
             }
         });
     </script>
+    
+    <!-- Keep-Alive Script -->
+    <script src="/js/keep-alive.js"></script>
 </body>
 </html>
